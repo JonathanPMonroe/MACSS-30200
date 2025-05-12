@@ -8,11 +8,40 @@
 
 ## Abstract
 
-We build a reproducible pipeline to detect political deepfakes on YouTube by fusing **vision** (face-cropped frames) and **audio** (2 s speech clips) features.  
-1. **Data Collection:** “<candidate> deepfake” YouTube searches → download real & fake videos.  
-2. **Feature Extraction:** Sample face crops at 0.5 FPS + extract synchronized 2 s audio.  
-3. **Modeling:** Pretrained Xception (vision) + Wav2Vec2 (audio) → logistic-regression fusion.  
-4. **Bias Analysis:** Audio branch flags real Biden clips ≫ real Trump clips (ΔFPR≈5.6%), revealing political bias.
+This project builds a reproducible pipeline to detect political deepfakes on YouTube by fusing **visual** (face-cropped frames) and **audio** (2-second speech clips) features. We leverage pretrained deep learning models for both modalities and analyze their combined performance and potential political bias.
+
+### Key Components:
+
+1. **Data Collection**  
+   - Search for "<candidate> deepfake" via YouTube API  
+   - Download real and fake videos using `yt-dlp` with browser cookies
+
+2. **Feature Extraction**  
+   - Sample one frame every 2 seconds using OpenCV  
+   - Detect and crop faces with 50% margin via `face_recognition`  
+   - Extract 2-second audio snippets synchronized with the sampled frames
+
+3. **Modeling**  
+   - Visual features: Pretrained Xception (via `timm`)  
+   - Audio features: Pretrained Wav2Vec2 (via `transformers`)  
+   - Fusion: Logistic regression on concatenated image/audio embeddings
+
+4. **Evaluation**  
+   - ROC AUC: Vision-only (0.461) vs. Multimodal (0.990)  
+   - ΔFPR (Biden–Trump): ~0.056 false-positive gap  
+   - Grad-CAM used to identify spatial attention patterns  
+   - Group-based bias metrics and t-tests on attention maps
+
+---
+
+## Features
+
+- End-to-end Jupyter notebook for the full pipeline  
+- Automated caching of YouTube API search results  
+- Face detection via `face_recognition` + OpenCV  
+- Audio clipping with `ffmpeg`  
+- Multimodal fusion with scikit-learn  
+- Detailed bias metrics and visualization suite  
 
 ---
 
@@ -20,88 +49,113 @@ We build a reproducible pipeline to detect political deepfakes on YouTube by fus
 
 ```
 .
-├── README.md                        ← this file
-├── requirements.txt                 ← exact package versions
-├── notebook: pilot.ipynb
-│   ├── 01_data_collection    ← URL search & video download
-│   ├── eature_extraction  ← frame & audio extraction
-│   ├── model_training  ← vision/audio/fusion training
-│   ├── bias_analysis    ← ΔFPR, Grad-CAM, t-tests
-│   └── visualizations     ← all final plots
-├── data3/                            
-│   ├── urls/{fake real}/
-│   ├── videos/{candidate}/{real,fake}/             
-│   ├── frames_cropped/{Biden,Trump}/{Rframes,Fframes}/
-│   └── audio_clips/{Biden,Trump}/{real,fake}/
-├── csv
-│   ├── multimodal scores
-│   └── vision scores
-├── Presentation Slides
-
+├── README.md
+├── requirements.txt
+├── pilot.ipynb                   # Single notebook with full pipeline (data to evaluation)
+├── data/
+│   ├── urls/                     # Saved YouTube video URLs per candidate
+│   └── videos/                   # Downloaded real/fake videos
+├── data3/
+│   ├── frames_cropped/           # Face-cropped frames organized by candidate/label
+│   └── audio_clips/              # Corresponding 2-second audio clips
+├── results/
+│   ├── vision_scores.csv
+│   ├── multimodal_scores.csv
+│   └── plots/                    # Visualizations and charts for presentation
+└── slides/
+    └── presentation.pdf          # Final Beamer presentation slides
 ```
 
 ---
 
-## 💻 Requirements
+## Installation
 
-- **Python:** 3.10+  
-- **Install:**  
-  ```bash
-  python3 -m venv venv
-  source venv/bin/activate
-  pip install --upgrade pip
-  pip install -r requirements.txt
-  ```
+Requires **Python 3.10+** and **FFmpeg**.
 
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
 ```
-face_recognition==1.2.3
-google-api-python-client
-moviepy==2.1.2
-numpy==2.1.1
-opencv-python==4.11.0
-pandas==2.2.2
+
+---
+
+## Requirements
+
+```text
+google-api-python-client==2.125.0
+pandas==2.2.3
+numpy==2.1.3
+opencv-python==4.11.0.86
+face-recognition==1.3.0
+dlib==19.24.6
+torch==2.7.0
+torchvision==0.22.0
+pillow==11.1.0
 scikit-learn==1.6.1
-timm
-torch>=2.0
-transformers
-soundfile
-captum
-shap
-yt-dlp
+transformers==4.40.1
+timm==0.9.16
+soundfile==0.12.1
+captum==0.6.0
+shap==0.47.2
+graphviz==0.20.3
+yt-dlp==2025.4.30
+moviepy==1.0.3
+matplotlib==3.8.4
 ```
 
 ---
 
-## 🚀 Reproducibility
+## Usage
 
-All steps run top-to-bottom in the notebooks:
+All steps—from data collection to modeling and evaluation—are implemented in:
 
-1. **Data Collection**  
-   Run `notebooks/01_data_collection.ipynb` to build `data/urls/` and download videos into `data/videos/`.
+```text
+pilot.ipynb
+```
 
-2. **Feature Extraction**  
-   Run `notebooks/02_feature_extraction.ipynb` to generate face crops in `data3/frames_cropped/` and audio clips in `data3/audio_clips/`.
+To run:
 
-3. **Model Training**  
-   Run `notebooks/03_model_training.ipynb` to train vision-only, audio-only, and fusion models. Outputs → `results/vision_scores.csv` & `results/multimodal_scores.csv`.
+```bash
+jupyter notebook pilot.ipynb
+```
 
-4. **Bias Analysis**  
-   Run `notebooks/04_bias_analysis.ipynb` to compute group-wise ROC AUC, ΔFPR, Grad-CAM center-of-mass, and t-tests.
+This will:
 
-5. **Visualizations**  
-   Run `notebooks/05_visualizations.ipynb` to regenerate all figures in `results/plots/`.
-
----
-
-## 📑 Citation
-
-If you use or extend this work, please cite:
-
-> Monroe, J. (2025). _Political Deepfake Detection: A Multimodal Proof-of-Concept_. MACSS 30200 Proposal Track.
+1. Query YouTube and download candidate-specific real/fake videos  
+2. Sample and crop frames using face detection  
+3. Extract synchronized audio using FFmpeg  
+4. Generate multimodal embeddings and train logistic regression  
+5. Evaluate ROC AUC and compute candidate-specific FPRs  
+6. Visualize Grad-CAM heatmaps and decision boundaries  
 
 ---
 
-## 🔗 GitHub Repository
+## Results Summary
 
-https://github.com/YOUR_USERNAME/political-deepfake-detection  
-*(Replace with your actual repo URL)*
+| Model         | ROC AUC | ΔFPR (Biden–Trump) |
+|---------------|---------|--------------------|
+| Vision-Only   | 0.461   | 0.031              |
+| Multimodal    | 0.990   | 0.056              |
+
+- **Multimodal fusion** drastically improved classification accuracy  
+- **ΔFPR** indicates slight political skew in false-positive errors  
+- **Grad-CAM COM** analysis showed candidate-specific visual focus areas  
+
+---
+
+## Citation
+
+If you use or build upon this work, please cite:
+
+> Monroe, J. (2025). *Political Deepfake Detection: A Multimodal Proof-of-Concept*. MACSS 30200 Proposal Track.
+
+---
+
+## Contact
+
+For questions, collaboration, or follow-up:
+
+- Email: jonathanmonroe@uchicago.edu  
+- GitHub: [github.com/JonathanPMonroe/MACSS-30200](https://github.com/JonathanPMonroe/MACSS-30200)
