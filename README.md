@@ -22,28 +22,18 @@ We build a reproducible pipeline to detect political deepfakes on YouTube by fus
 .
 ├── README.md                        ← this file
 ├── requirements.txt                 ← exact package versions
-├── notebooks/
-│   ├── 01_data_collection.ipynb     ← URL search & video download
-│   ├── 02_feature_extraction.ipynb  ← frame & audio extraction
-│   ├── 03_model_training.ipynb      ← vision/audio/fusion training
-│   ├── 04_bias_analysis.ipynb       ← ΔFPR, Grad-CAM, t-tests
-│   └── 05_visualizations.ipynb      ← all final plots
+├── notebook: pilot.ipynb
+│   ├── 01_data_collection    ← URL search & video download
+│   ├── eature_extraction  ← frame & audio extraction
+│   ├── model_training  ← vision/audio/fusion training
+│   ├── bias_analysis    ← ΔFPR, Grad-CAM, t-tests
+│   └── visualizations     ← all final plots
 ├── data/                            ← raw URLs & videos
 │   ├── urls/fake/
 │   └── videos/{candidate}/{real,fake}/
 ├── data3/                           ← processed frames & audio
 │   ├── frames_cropped/{Biden,Trump}/{Rframes,Fframes}/
 │   └── audio_clips/{Biden,Trump}/{real,fake}/
-├── results/
-│   ├── vision_scores.csv
-│   ├── multimodal_scores.csv
-│   └── plots/*.png
-└── src/                             ← utility scripts (optional)
-    ├── collect_fake_urls.py
-    ├── download_videos.py
-    ├── extract_frames.py
-    ├── extract_audio.py
-    └── train_fusion.py
 ```
 
 ---
