@@ -6,7 +6,7 @@
 
 ---
 
-## 📖 Abstract
+## Abstract
 
 We build a reproducible pipeline to detect political deepfakes on YouTube by fusing **vision** (face-cropped frames) and **audio** (2 s speech clips) features.  
 1. **Data Collection:** “<candidate> deepfake” YouTube searches → download real & fake videos.  
@@ -16,7 +16,7 @@ We build a reproducible pipeline to detect political deepfakes on YouTube by fus
 
 ---
 
-## 📂 Repository Structure
+## Repository Structure
 
 ```
 .
@@ -28,12 +28,16 @@ We build a reproducible pipeline to detect political deepfakes on YouTube by fus
 │   ├── model_training  ← vision/audio/fusion training
 │   ├── bias_analysis    ← ΔFPR, Grad-CAM, t-tests
 │   └── visualizations     ← all final plots
-├── data/                            ← raw URLs & videos
-│   ├── urls/fake/
-│   └── videos/{candidate}/{real,fake}/
-├── data3/                           ← processed frames & audio
+├── data3/                            
+│   ├── urls/{fake real}/
+│   ├── videos/{candidate}/{real,fake}/             
 │   ├── frames_cropped/{Biden,Trump}/{Rframes,Fframes}/
 │   └── audio_clips/{Biden,Trump}/{real,fake}/
+├── csv
+│   ├── multimodal scores
+│   └── vision scores
+├── Presentation Slides
+
 ```
 
 ---
