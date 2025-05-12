@@ -1,0 +1,7 @@
+face_recognition==1.2.3
+google-api-python-client
+numpy==2.1.1
+opencv-python==4.11.0
+pandas==2.2.2
+scikit-learn==1.6.1
+yt-dlp
